@@ -10,7 +10,7 @@ Johan Stiven Londoño
 ## Requisitos
 
 - Python 3.9 o posterior.
-- Las dependencias de Python indicadas en `docs/requirements.txt`: NumPy, SciPy, Matplotlib y SoundFile.
+- Las dependencias de Python indicadas en `docs/requirements.txt`: NumPy, SciPy, Matplotlib, SoundFile y SoundDevice.
 - El archivo de entrada `data/audio_prueba.wav`, incluido en este repositorio. El programa admite WAV mono o estéreo; si es estéreo, analiza el primer canal.
 
 SoundFile está declarado como dependencia, aunque la versión actual del programa no lo importa directamente.
@@ -23,35 +23,34 @@ Ejecuta estos comandos desde la carpeta raíz del repositorio. El entorno virtua
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r docs/requirements.txt
-python src/main.py
+python src/main.py --gui
 ```
 
-En macOS y Linux, `source .venv/bin/activate` activa el entorno. En Windows PowerShell, usa `.venv\Scripts\Activate.ps1` en su lugar. Para salir del entorno virtual, ejecuta `deactivate`.
+Si tu equipo tiene interfaz gráfica, esta orden abre una ventana con sliders para ajustar graves, medios y agudos. En macOS y Linux, `source .venv/bin/activate` activa el entorno. En Windows PowerShell, usa `.venv\Scripts\Activate.ps1` en su lugar. Para salir del entorno virtual, ejecuta `deactivate`.
+
+En macOS, usa una versión reciente de Python instalada desde [python.org](https://www.python.org/downloads/macos/) para la interfaz gráfica. Algunas versiones de Python incluidas con Xcode traen Tk antiguo y no pueden abrir la ventana. Comprueba la versión de Tk con `python -c "import tkinter; print(tkinter.TkVersion)"`; se requiere Tk 8.6 o posterior. Si instalas otro Python, crea el entorno virtual nuevamente con ese intérprete.
 
 ## Qué ocurre al ejecutarlo
 
-El programa lee `data/audio_prueba.wav`, normaliza la señal y muestra en la terminal la frecuencia y el período de muestreo, el número de muestras, la duración, los valores máximo y mínimo, el valor medio y el RMS. Después crea y muestra estas gráficas:
+La versión gráfica permite cargar un archivo WAV, ajustar la ganancia de cada banda (graves-medios-agudos), modificar el volumen general en dB y cambiar la velocidad entre 0.5× y 2×. Esta velocidad cambia también el tono: 0.5× duplica la duración y baja el tono; 2× reduce la duración a la mitad y sube el tono. La interfaz permite escuchar el audio original o procesado y detener la reproducción. Sus pestañas muestran las comparaciones temporales y frecuenciales, y al aplicar los cambios guarda el resultado en `results/`. El programa también calcula e imprime en la terminal la frecuencia de muestreo, el período de muestreo, el número de muestras, la duración, los valores máximo y mínimo, el valor medio y el RMS. Además genera:
 
-- `results/dominio_temporal.png`: amplitud de la señal original a través del tiempo.
-- `results/dominio_frecuencial.png`: espectro calculado con FFT y bandas de frecuencia indicadas sobre la gráfica.
-- `results/comparacion_ruido.png`: comparación de la señal original con una versión a la que se añade ruido simulado con SNR nominal de 20 dB.
+- `results/dominio_temporal_comparacion.png`: comparación temporal entre la señal original y la procesada.
+- `results/dominio_frecuencial_comparacion.png`: comparación del espectro antes y después del ecualizador.
+- `results/audio_ecualizado.wav`: archivo de audio procesado en formato WAV.
 
-Las ventanas de Matplotlib se muestran una por una: cierra cada ventana para que el programa continúe. Las imágenes se guardan localmente en `results/` antes de mostrarse. Se vuelven a generar al ejecutar el programa y están excluidas del control de versiones por `.gitignore`; por tanto, no aparecerán automáticamente en el repositorio remoto.
-
-Para ejecutarlo sin abrir ventanas gráficas (por ejemplo, en un servidor sin escritorio), usa:
+Las gráficas también se guardan en `results/`. Para ejecutar el programa sin abrir una interfaz gráfica, usa la versión en modo terminal:
 
 ```bash
-MPLBACKEND=Agg python src/main.py
+MPLBACKEND=Agg python3 src/main.py --no-show
 ```
 
-En Windows PowerShell, el equivalente es:
+También es posible ajustar la ganancia por banda desde la línea de comandos:
 
-```powershell
-$env:MPLBACKEND = "Agg"
-python src/main.py
+```bash
+python3 src/main.py --low-gain-db 6 --mid-gain-db 2 --high-gain-db 5 --no-show
 ```
 
 ## Alcance actual
 
-Esta versión caracteriza y visualiza la señal de entrada y genera una comparación con ruido simulado. Las bandas de graves, medios y agudos se señalan en el análisis, pero los filtros digitales Butterworth/FIR y el ajuste de ganancia por banda todavía no están implementados. El programa tampoco genera ni guarda un archivo de audio ecualizado. Aún falta una interfaz interactiva.
+La versión actual implementa un ecualizador digital simple con filtros Butterworth de orden 4 para separar graves, medios y agudos. Permite modificar la ganancia de cada banda, visualizar las señales dentro de la interfaz, escuchar la entrada y la salida, y guardar el audio procesado.
 
